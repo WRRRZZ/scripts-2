@@ -65,6 +65,40 @@ $.appId = 10032;
       await run();
     }
   }
+    // 助力
+  let res = [], res2 = [];
+  $.InviteLists = []
+  if (HelpAuthorFlag) {
+    $.innerInviteList = await getAuthorShareCode('');
+    res2 = await getAuthorShareCode('');
+    $.innerInviteLists = getRandomArrayElements([...res, ...res2], [...res, ...res2].length);
+    $.InviteLists.push(...$.InviteList,...$.innerInviteList,...$.innerInviteLists);
+  }else{
+    $.InviteLists.push(...$.InviteList);
+  }
+  for (let i = 0; i < cookiesArr.length; i++) {
+    $.cookie = cookiesArr[i];
+    $.canHelp = true;
+    $.UserName = decodeURIComponent($.cookie.match(/pt_pin=([^; ]+)(?=;?)/) && $.cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1]);
+    $.index = i + 1;
+    if ($.InviteLists && $.InviteLists.length) console.log(`\n******开始【邀请好友助力】*********\n`);
+    for (let j = 0; j < $.InviteLists.length && $.canHelp; j++) {
+      $.inviteId = $.InviteLists[j];
+      console.log(`${$.UserName} 助力 ${$.inviteId}`);
+      let res = await taskGet(`story/helpbystage`, '_cfd_t,bizCode,dwEnv,ptag,source,strShareId,strZone', `&strShareId=${$.inviteId}`)
+      if(res && res.iRet == 0){
+        console.log(`助力成功: 获得${res.Data && res.Data.GuestPrizeInfo && res.Data.GuestPrizeInfo.strPrizeName || ''}`)
+      }else if(res && res.sErrMsg){
+        console.log(res.sErrMsg)
+        if(res.sErrMsg.indexOf('助力次数达到上限') > -1 || res.iRet === 2232 || res.sErrMsg.indexOf('助力失败') > -1){
+          break
+        }
+      }else{
+        console.log(JSON.stringify(res))
+      }
+      await $.wait(1000);
+    }
+  }
 })()
   .catch((e) => {
     $.log('', `❌ ${$.name}, 失败! 原因: ${e}!`, '')
